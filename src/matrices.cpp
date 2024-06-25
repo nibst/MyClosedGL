@@ -211,22 +211,17 @@ float dotproduct(glm::vec4 u, glm::vec4 v)
 }
 
 // Matriz de mudança de coordenadas para o sistema de coordenadas da Câmera.
-glm::mat4 Matrix_Camera_View(glm::vec4 position_c, glm::vec4 view_vector, glm::vec4 up_vector)
+glm::mat4 Matrix_Camera_View(glm::vec4 position_c, glm::vec4 view_vector, glm::vec4 up_vector, glm::vec4 right_vector)
 {   
     
-    glm::vec4 w = -view_vector;
-    glm::vec4 u = crossproduct(up_vector, w);
-    //printf("up_vector: %f,%f,%f,%f\n",up_vector.x,up_vector.y,up_vector.z,up_vector.w);
+    glm::vec4 n = -view_vector;
+    glm::vec4 u = crossproduct(up_vector, n);
 
-    //printf("w: %f,%f,%f,%f\n",w.x,w.y,w.z,w.w);
-
-    //printf("u: %f,%f,%f,%f\n",u.x,u.y,u.z,u.w);
-
-    // Normalizamos os vetores u e w
-    w = w / norm(w);
+    // Normalizamos os vetores u e n
+    n = n / norm(n);
     u = u / norm(u);
 
-    glm::vec4 v = crossproduct(w,u);
+    glm::vec4 v = crossproduct(n,u);
 
     glm::vec4 origin_o = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -236,18 +231,14 @@ glm::mat4 Matrix_Camera_View(glm::vec4 position_c, glm::vec4 view_vector, glm::v
     float vx = v.x;
     float vy = v.y;
     float vz = v.z;
-    float wx = w.x;
-    float wy = w.y;
-    float wz = w.z;
-    //printf("view_vector: %f,%f,%f,%f\n",view_vector.x,view_vector.y,view_vector.z,view_vector.w);
-    //printf("position_c: %f,%f,%f,%f\n",position_c.x,position_c.y,position_c.z,position_c.w);
-    //printf("up_vector: %f,%f,%f,%f\n",up_vector.x,up_vector.y,up_vector.z,up_vector.w);
-    //printf("v: %f,%f,%f,%f\n",v.x,v.y,v.z,v.w);
-    //printf("w: %f,%f,%f,%f\n",w.x,w.y,w.z,w.w);
+    float nx = n.x;
+    float ny = n.y;
+    float nz = n.z;
+
     return Matrix(
         ux   , uy   , uz   , -dotproduct(u , position_c - origin_o) ,
         vx   , vy   , vz   , -dotproduct(v , position_c - origin_o) ,
-        wx   , wy   , wz   , -dotproduct(w , position_c - origin_o) ,
+        nx   , ny   , nz   , -dotproduct(n , position_c - origin_o) ,
         0.0f , 0.0f , 0.0f , 1.0f
     );
 }
@@ -265,28 +256,7 @@ glm::mat4 Matrix_Orthographic(float l, float r, float b, float t, float n, float
     return M;
 }
 
-// Matriz de projeção perspectiva
-glm::mat4 Matrix_Perspective(float vfov, float aspect, float n, float f)
-{
-    float t = fabs(n) * tanf(vfov / 2.0f);
-    float b = -t;
-    float r =  t * aspect;
-    float l = -r;
-
-    glm::mat4 P = Matrix(
-        // PREENCHA AQUI A MATRIZ P DE PROJEÇÃO PERSPECTIVA (3D) UTILIZANDO OS
-        // PARÂMETROS n e f.
-        n    , 0.0f , 0.0f , 0.0f ,  // LINHA 1
-        0.0f , n    , 0.0f , 0.0f ,  // LINHA 2
-        0.0f , 0.0f , n+f  , -f*n ,  // LINHA 3
-        0.0f , 0.0f , 1    , 0.0f    // LINHA 4
-    );
-
-    // A matriz M é a mesma computada acima em Matrix_Orthographic().
-    glm::mat4 M = Matrix_Orthographic(l, r, b, t, n, f);
-    return -M*P;
-}
-glm::mat4 Matrix_Projection(float vfov, float hfov, float n, float f)
+glm::mat4 Matrix_Perspective(float vfov, float hfov, float n, float f)
 {
     float t = fabs(n) * tanf(vfov / 2.0f);
     float b = -t;
@@ -294,8 +264,6 @@ glm::mat4 Matrix_Projection(float vfov, float hfov, float n, float f)
     float l = -r;
 
     glm::mat4 P = Matrix(
-        // PREENCHA AQUI A MATRIZ P DE PROJEÇÃO PERSPECTIVA (3D) UTILIZANDO OS
-        // PARÂMETROS n e f.
         n    , 0.0f , 0.0f , 0.0f ,  // LINHA 1
         0.0f , n    , 0.0f , 0.0f ,  // LINHA 2
         0.0f , 0.0f , n+f  , -f*n ,  // LINHA 3
@@ -304,18 +272,42 @@ glm::mat4 Matrix_Projection(float vfov, float hfov, float n, float f)
 
     // A matriz M é a mesma computada acima em Matrix_Orthographic().
     glm::mat4 M = Matrix_Orthographic(l, r, b, t, n, f);
-    return -M*P;
-}
-glm::mat4 Matrix_Viewport(float rv, float lv, float tv, float bv)
-{
-    glm::mat4 VP = Matrix(
-        (rv-lv)/2 , 0.0f      , 0.0f , (rv+lv)/2 ,  // LINHA 1
-        0.0f      , (tv-bv)/2 , 0.0f , (tv+bv)/2 ,  // LINHA 2
-        0.0f      , 0.0f      , 1.0f , 0.0f      ,  // LINHA 3
-        0.0f      , 0.0f      , 0.0f , 1.0f         // LINHA 4
-    );
 
-    return VP;
+    // Note que as matrizes M*P e -M*P fazem exatamente a mesma projeção
+    // perspectiva, já que o sinal de negativo não irá afetar o resultado
+    // devido à divisão por w. Por exemplo, seja q = [qx,qy,qz,1] um ponto:
+    //
+    //      M*P*q = [ qx', qy', qz', w ]
+    //   =(div w)=> [ qx'/w, qy'/w, qz'/w, 1 ]   Eq. (*)
+    //
+    // agora com o sinal de negativo:
+    //
+    //     -M*P*q = [ -qx', -qy', -qz', -w ]
+    //   =(div w)=> [ -qx'/-w, -qy'/-w, -qz'/-w, -w/-w ]
+    //            = [ qx'/w, qy'/w, qz'/w, 1 ]   Eq. (**)
+    //
+    // Note que o ponto final, após divisão por w, é igual: Eq. (*) == Eq. (**).
+    //
+    // Então, por que utilizamos -M*P ao invés de M*P? Pois a especificação de
+    // OpenGL define que os pontos fora do cubo unitário NDC deverão ser
+    // descartados já que não irão aparecer na tela. O teste que define se um ponto
+    // q está dentro do cubo unitário NDC pode ser expresso como:
+    //
+    //      -1 <= qx'/w <= 1   &&  -1 <= qy'/w <= 1   &&  -1 <= qz'/w <= 1
+    //
+    // ou, de maneira equivalente SE w > 0, a placa de vídeo faz o seguinte teste
+    // ANTES da divisão por w:
+    //
+    //      -w <= qx' <= w   &&  -w <= qy' <= w   &&  -w <= qz' <= w
+    //
+    // Note que o teste acima economiza uma divisão por w caso o ponto seja
+    // descartado (quando esteja fora de NDC), entretanto, este último teste só
+    // é equivalente ao primeiro teste SE E SOMENTE SE w > 0 (isto é, se w for
+    // positivo). Como este último teste é o que a placa de vídeo (GPU) irá fazer,
+    // precisamos utilizar a matriz -M*P para projeção perspectiva, de forma que
+    // w seja positivo.
+    //
+    return -M*P;
 }
 // Função que imprime uma matriz M no terminal
 void PrintMatrix(glm::mat4 M)
@@ -359,4 +351,23 @@ void PrintMatrixVectorProductDivW(glm::mat4 M, glm::vec4 v)
     printf("[ %+0.2f  %+0.2f  %+0.2f  %+0.2f ][ %+0.2f ] = [ %+0.2f ] =(div w)=> [ %+0.2f ]\n", M[0][1], M[1][1], M[2][1], M[3][1], v[1], r[1], r[1]/w);
     printf("[ %+0.2f  %+0.2f  %+0.2f  %+0.2f ][ %+0.2f ]   [ %+0.2f ]            [ %+0.2f ]\n", M[0][2], M[1][2], M[2][2], M[3][2], v[2], r[2], r[2]/w);
     printf("[ %+0.2f  %+0.2f  %+0.2f  %+0.2f ][ %+0.2f ]   [ %+0.2f ]            [ %+0.2f ]\n", M[0][3], M[1][3], M[2][3], M[3][3], v[3], r[3], r[3]/w);
+}
+glm::mat4 Matrix_Viewport(float rv, float lv, float tv, float bv)
+{
+    /*
+    w / 2.0f,  0.0f     , 0.0f ,  w / 2.0f,
+    0.0f    ,-h / 2.0f  , 0.0f ,  h / 2.0f,
+    0.0f    , 0.0f      , 1.0f ,  0.0f,
+    0.0f    , 0.0f      , 0.0f ,  1.0f
+    */
+
+
+    glm::mat4 VP = Matrix(
+        lv/2 , 0.0f      , 0.0f , (lv)/2 ,  // LINHA 1
+        0.0f      , -tv/2 , 0.0f , (tv)/2 ,  // LINHA 2
+        0.0f      , 0.0f      , 1.0f , 0.0f      ,  // LINHA 3
+        0.0f      , 0.0f      , 0.0f , 1.0f         // LINHA 4
+    );
+
+    return VP;
 }

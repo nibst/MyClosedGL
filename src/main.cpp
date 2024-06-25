@@ -48,6 +48,7 @@
 #include "model_object.hpp"
 #include "options_manager.hpp"
 #include "VAO.hpp"
+#include "options.hpp"
 #include <cfloat>
 
 
@@ -156,6 +157,8 @@ int main(int argc, char* argv[])
     // redimensionada, por consequência alterando o tamanho do "framebuffer"
     // (região de memória onde são armazenados os pixels da imagem).
     glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
+    glfwSetWindowSize(window, 800, 600);
+
     FramebufferSizeCallback(window, g_ScreenWidth, g_ScreenHeight); // Forçamos a chamada do callback acima, para definir g_ScreenRatio.
 
 
@@ -172,13 +175,11 @@ int main(int argc, char* argv[])
     float initial_camera_distance = g_CameraDistance;
     float nearplane = -0.1f;  // Posição do "near plane"
     float farplane  = -10.0f; // Posição do "far plane"
-    glm::vec4 camera_up_vector   = glm::vec4(0.0f,1.0f,0.0f,0.0f); // Vetor "up" fixado para apontar para o "céu" (eito Y global)
-    glm::vec4 camera_up_point = glm::vec4(0.0f,1.0f,0.0f,1.0f);
-    Camera *camera = new Camera(initial_camera_position, object_position - glm::vec4(x,y,z,1.0f),camera_up_vector);
+
+    Camera *camera = new Camera();
     OptionsManager* options_manager = new OptionsManager(window,myrenderer,camera);
 
     float prev_time = (float)glfwGetTime();
-    float speed = 1.5f;
     // Abaixo definimos as varáveis que efetivamente definem a câmera virtual.
     // Veja slides 195-227 e 229-234 do documento Aula_08_Sistemas_de_Coordenadas.pdf.
 
@@ -196,76 +197,51 @@ int main(int argc, char* argv[])
 
 
 		glm::vec4 camera_position_c;
-        if (g_ResetCamera) {
-            camera_position_c = glm::vec4 (initial_camera_position.x, initial_camera_position.y, initial_camera_position.z, 1.0f);
-            camera->setCenterPosition(camera_position_c);
-            g_CameraDistance = initial_camera_distance;
-            g_CameraPhi = initial_phi;
-            g_CameraTheta = initial_theta;
-			g_ResetCamera = false;
+        if (camera->isResetedCamera()) {
+            g_CameraDistance = camera->getLookAtCameraDistance();
+            g_CameraPhi = camera->phi;
+            g_CameraTheta = camera->theta;
+            camera->reseted = false;
         }
-        // Computamos a posição da câmera utilizando coordenadas esféricas.  As
-        // variáveis g_CameraDistance, g_CameraPhi, e g_CameraTheta são
-        // controladas pelo mouse do usuário. Veja as funções CursorPosCallback()
-        // e ScrollCallback().
-        r = g_CameraDistance;
-        y = r*sin(g_CameraPhi);
-        z = r*cos(g_CameraPhi)*cos(g_CameraTheta);
-        x = r*cos(g_CameraPhi)*sin(g_CameraTheta);
-
-
-		glm::vec4 camera_view_vector;
-		if (g_LookAtCamera) {
-            camera->setCenterPosition(glm::vec4(x,y,z,1.0f));
-			//camera_view_vector = object_position - camera_position_c;
-		} else {
-			camera->setViewVector(object_position - glm::vec4(x,y,z,1.0f));
-            camera_view_vector = object_position - glm::vec4(x,y,z,1.0f);
-		}
-
-        glm::vec4 w = -camera->getViewVector();
-        glm::vec4 u = crossproduct(camera->getUpVector(),w);
-        glm::vec4 v = crossproduct(w, u);
-        // Normalizamos os vetores u e w
-        w = w / norm(w);
-        u = u / norm(u);
-        v = v / norm(v);
 
 
         float current_time = (float)glfwGetTime();
         float delta_t = current_time - prev_time;
         prev_time = current_time;
-        if (!g_LookAtCamera){
+        camera->theta = g_CameraTheta;
+        camera->phi = g_CameraPhi;
+        camera->setLookAtCameraDistance(g_CameraDistance);
+        if (options_manager->isModelLoaded()){
             if (tecla_D_pressionada){
                 // Movimenta câmera para direita
-                camera_position_c += u * speed * delta_t;
-                camera->setCenterPosition(camera_position_c);
+                camera->move(Right, delta_t);
+
             }
             if (tecla_S_pressionada){
                 // Movimenta câmera para tras
-                camera_position_c += (w) * speed * delta_t;
-                camera->setCenterPosition(camera_position_c);
+                camera->move(Backwards, delta_t);
+
 
             }
             if (tecla_A_pressionada){
                 // Movimenta câmera para esquerda
-                camera_position_c += (-u) * speed * delta_t;
-                camera->setCenterPosition(camera_position_c);
+                camera->move(Left, delta_t);
+
             }
             if (tecla_W_pressionada){
                 // Movimenta câmera para frente
-                camera_position_c += (-w) * speed * delta_t;
-                camera->setCenterPosition(camera_position_c);
+                camera->move(Forward, delta_t);
+
             }
             if (tecla_Q_pressionada){
                 // Movimenta câmera para cima
-                camera_position_c += v * speed * delta_t;
-                camera->setCenterPosition(camera_position_c);
+                camera->move(Up, delta_t);
+
             }
             if (tecla_Z_pressionada){
                 // Movimenta câmera para baixo
-                camera_position_c += -v * speed * delta_t;
-                camera->setCenterPosition(camera_position_c);
+                camera->move(Down, delta_t);
+
             }        
 
         }
@@ -279,12 +255,7 @@ int main(int argc, char* argv[])
 
         // Agora computamos a matriz de Projeção.
         glm::mat4 projection;
-
-
-
-        // Projeção Perspectiva.
-        float field_of_view = 3.141592 / 3.0f;
-        projection = Matrix_Perspective(camera->getHorizontalFOV(),g_ScreenRatio, camera->nearplane, camera->farplane);
+        projection = camera->getProjectionMatrix();
 
 
 
@@ -320,10 +291,7 @@ int main(int argc, char* argv[])
             modelMatrix = glm::mat4(1.0f);
             modelMatrix = glm::scale(modelMatrix, objectScale);
             modelMatrix = glm::translate(modelMatrix, objectTranslate);
-            if(myrenderer->isClosed2GLActive()){
-               ;// positions(&model_object,modelViewProj,myrenderer);
-            }
-            myrenderer->render(model_object,*camera,g_ScreenWidth,g_ScreenHeight);
+            myrenderer->render(model_object,*camera,g_ScreenWidth,g_ScreenHeight,modelMatrix);
         }
         options_manager->ApplyProperties(delta_t,modelMatrix,g_ScreenWidth, g_ScreenHeight);
 
@@ -344,19 +312,8 @@ int main(int argc, char* argv[])
 // "framebuffer" (região de memória onde são armazenados os pixels da imagem).
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
-    // Indicamos que queremos renderizar em toda região do framebuffer. A
-    // função "glViewport" define o mapeamento das "normalized device
-    // coordinates" (NDC) para "pixel coordinates".  Essa é a operação de
-    // "Screen Mapping" ou "Viewport Mapping" vista em aula ({+ViewportMapping2+}).
-    glViewport(0, 0, width, height);
 
-    // Atualizamos também a razão que define a proporção da janela (largura /
-    // altura), a qual será utilizada na definição das matrizes de projeção,
-    // tal que não ocorra distorções durante o processo de "Screen Mapping"
-    // acima, quando NDC é mapeado para coordenadas de pixels. Veja slides 205-215 do documento Aula_09_Projecoes.pdf.
-    //
-    // O cast para float é necessário pois números inteiros são arredondados ao
-    // serem divididos!
+    glViewport(0, 0, width, height);
     g_ScreenRatio = (float)width / height;
     g_ScreenWidth  = width;
     g_ScreenHeight = height;

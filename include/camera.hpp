@@ -1,14 +1,19 @@
 #pragma once
 #include "matrices.h"
 #include "options.hpp"
-#define DEFAULT_POS glm::vec4(2.0f,3.0f,2.0f,1.0f)
-#define DEFAULT_VIEW glm::vec4(0.0f,0.0f,3.5f,0.0f)
-#define DEFAULT_PHI 1.0f
+#define DEFAULT_LOOK_AT_CAMERA_DISTANCE 3.5f
+
+#define DEFAULT_POS glm::vec4(0.0f,0.0f,DEFAULT_LOOK_AT_CAMERA_DISTANCE,1.0f)
+#define DEFAULT_PHI 0.0f
 #define DEFAULT_THETA 0.0f
 #define DEFAULT_NEAR -0.1f
 #define DEFAULT_FAR -150.f
 #define DEFAULT_RATIO 1.0f
+
 #define DEFAULT_UP glm::vec4(0.0f,1.0f,0.0f,0.0f)
+#define DEFAULT_VIEW glm::vec4(0.0f,0.0f,DEFAULT_LOOK_AT_CAMERA_DISTANCE,0.0f)
+#define DEFAULT_RIGHT_VECTOR glm::vec4(1.0f,0.0f,0.0f,0.0f)
+
 #define DEFAULT_SPEED 14.5f
 #define DEFAULT_FOV 3.141592/3.0f
 #define DEFAULT_LOOK_AT_POINT glm::vec4(0.0f,0.0f,1.0f,0.0f)
@@ -26,6 +31,7 @@ class Camera{
         
         virtual void rotate(float dphi,float dtheta);
         void move(MovementOptions direction, float delta_time);
+        void resetCamera();
 
         float getHorizontalFOV();
         float getVerticalFOV();
@@ -35,24 +41,35 @@ class Camera{
         void setHorizontalFOV(float horizontal_FOV); 
         void setCenterPosition(glm::vec4 position);
         void setVerticalFOV(float vertical_FOV);
-        virtual void calculateZoom(double yoffset);
+        void setLookAtCameraDistance(float look_at_distance);
+        void setInitialPosition(glm::vec4 initial_position);
+        bool isResetedCamera();
+        float getLookAtCameraDistance();
+        void rotate(float yaw, float pitch, float roll);
 
         float speed;
         float phi;
         float theta;
         float nearplane;  // Posição do "near plane"
         float farplane; // Posição do "far plane"
+        bool reseted;
 
     private:
-
+        void rotateYaw(float alpha);
+        void rotatePitch(float alpha);
+        void rotateRoll(float alpha);
+        float look_at_camera_distance;
         float horizontal_FOV;
         float vertical_FOV;
-        glm::vec4 view_vector;  // Vetor "view", sentido para onde a câmera está virada
-        glm::vec4 up_vector;   // Vetor "up" fixado para apontar para o "céu" (eito Y global)
+        //u,v,n coordinates system
+        glm::vec4 view_vector;  // Vetor "view", sentido para onde a câmera está virada (n)
+        glm::vec4 up_vector;    // Vetor "up"       (v)
+        glm::vec4 right_vector;  // Vetor "right"    (u)
         glm::vec4 pitch;
         glm::vec4 yaw;
         glm::vec4 roll;
         glm::vec4 look_at_point;
         glm::vec4 position_c ;  // Ponto "c", centro da câmera
+        glm::vec4 initial_position;
 
 };

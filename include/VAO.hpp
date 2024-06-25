@@ -11,7 +11,6 @@ class VAO{
         void bindIndices(std::vector<GLuint> indices);
         void bind();
         void unbind();
-        //void deleteVAO();
         GLuint getID();
         
     private:

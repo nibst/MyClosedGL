@@ -28,21 +28,26 @@ Renderer::Renderer(){
     this->frontFace = GL_CW;
 }
 void Renderer::setCullingMode(CullingModes mode) {
-    switch (mode)
-    {
-    case NoCulling:
+    if(close2GL_active){
         glDisable(GL_CULL_FACE);
-        break;
-    case BackfaceCulling:
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_BACK);
-        break;
-    case FrontFaceCulling:
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_FRONT);
-        break;
-    default:
-        break;
+    }
+    else{
+    switch (mode)
+        {
+        case NoCulling:
+            glDisable(GL_CULL_FACE);
+            break;
+        case BackfaceCulling:
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_BACK);
+            break;
+        case FrontFaceCulling:
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_FRONT);
+            break;
+        default:
+            break;
+        }
     }
 
 }
@@ -83,26 +88,22 @@ void Renderer::swapGLFrontFace(){
         this->setGLFrontFace(GL_CCW);
     }
 }
-void Renderer::setupMatrices(ModelObject model_object, Camera camera){
-    this->model = glm::mat4(1.0f);
+void Renderer::setupMatrices(Camera camera, glm::mat4 model){
+    this->model = model;
     this->view = camera.getViewMatrix();
     this->projection = camera.getProjectionMatrix();
+    this->model_view_proj = this->projection * this->view * this->model;
 }
-void Renderer::render(ModelObject object, Camera camera, float screen_width, float screen_height){
+void Renderer::render(ModelObject object, Camera camera, float screen_width, float screen_height, glm::mat4 model){
     if (close2GL_active){
-        setupMatrices(object, camera);
-        glm::mat4 model_view_projection= this->projection*this->view*this->model;
-        this->processTrianglesClosed2GL(object,model_view_projection,screen_width,screen_height);
+        setupMatrices(camera, model);
+        object = this->processTrianglesClosed2GL(object,this->model_view_proj,screen_width,screen_height);
     }
     glBindVertexArray(object.getVAO().getID());
-
     glUniformMatrix4fv(model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-    //glUniform1i(g_object_id_uniform, object.getID());
     // Pedimos para a GPU rasterizar os vértices dos eixos XYZ
-    // apontados pelo VAO como linhas. Veja a definição de
-    // g_VirtualScene[""] dentro da função BuildTrianglesAndAddToVirtualScene(), e veja
-    // a documentação da função glDrawElements() em
-    // http://docs.gl/gl3/glDrawElements.
+    // apontados pelo VAO como linhas. Veja a documentação 
+    // da função glDrawElements() em http://docs.gl/gl3/glDrawElements.
     glDrawElements(
         object.getRenderingMode(),
         object.getNumIndices(),
@@ -112,7 +113,7 @@ void Renderer::render(ModelObject object, Camera camera, float screen_width, flo
 
     // "Desligamos" o VAO, evitando assim que operações posteriores venham a
     // alterar o mesmo. Isso evita bugs.
-    glBindVertexArray(0);
+    object.getVAO().unbind();
 }
 void Renderer::LoadShadersFromFiles()
 {
@@ -336,104 +337,73 @@ bool Renderer::isClosed2GLActive(){
     return this->close2GL_active;
 }
 
-void Renderer::processTrianglesClosed2GL(ModelObject model_object, glm::mat4 model_view_proj,float screen_width, float screen_height){
+ModelObject Renderer::processTrianglesClosed2GL(ModelObject model_object, glm::mat4 model_view_proj,float screen_width, float screen_height){
     int clipped_vertices = 0;
     std::vector<GLfloat> close2gl_coefficients;
-    for (Triangle tri: model_object.triangles) {
-        bool clip_vertices = false;
-        // three triangles vertices
-        glm::vec4 coords1 = glm::vec4(tri.vertices[0].pos,1.0f);
-        glm::vec4 coords2 = glm::vec4(tri.vertices[1].pos,1.0f);
-        glm::vec4 coords3 = glm::vec4(tri.vertices[2].pos,1.0f);                   
-        coords1 = model_view_proj * coords1;
-        coords2 = model_view_proj * coords2;
-        coords3 = model_view_proj * coords3;
-        
-        // clip if w <=  0
-        if (coords1.w <= 0 || coords2.w <= 0 || coords3.w <= 0) {
-            clipped_vertices += 3;
-        } else {
-            // division by w
-            coords1.x /= coords1.w;
-            coords1.y /= coords1.w;
-            coords1.z /= coords1.w;
-            coords1.w /= coords1.w;
-            coords2.x /= coords2.w;
-            coords2.y /= coords2.w;
-            coords2.z /= coords2.w;
-            coords2.w /= coords2.w;
-            coords3.x /= coords3.w;
-            coords3.y /= coords3.w;
-            coords3.z /= coords3.w;
-            coords3.w /= coords3.w;
-            // clip if z outside (-1, 1)
-            if ( coords1.z < -1 || coords1.z > 1 ||
-                    coords2.z < -1 || coords2.z > 1 ||
-                    coords3.z < -1 || coords3.z > 1 ) {
-                clipped_vertices += 3;
-            } else {
-                
-                // calculate screen coordinates for backface culling
-                glm::mat4 viewport = Matrix_Viewport(0.0f, (float)screen_width, (float)screen_height, 0.0f);
-                glm::vec4 coords1sc = viewport * coords1;
-                glm::vec4 coords2sc = viewport * coords2;
-                glm::vec4 coords3sc = viewport * coords3;
-        
-                // backface culling
-                float area = 0;
-                float sum  = 0;
-                sum += (coords1sc.x*coords2sc.y - coords2sc.x*coords1sc.y);
-                sum += (coords2sc.x*coords3sc.y - coords3sc.x*coords2sc.y);
-                sum += (coords3sc.x*coords1sc.y - coords1sc.x*coords3sc.y);
-                area = 0.5f * sum;
-                
-                if (this->frontFace == GL_CW) { // clockwise
-                    if (area < 0) {
-                        // cull
-                        clipped_vertices += 3;
-                    } else {
-                        close2gl_coefficients.push_back(coords1.x);
-                        close2gl_coefficients.push_back(coords1.y);
-                        close2gl_coefficients.push_back(coords1.z);
-                        close2gl_coefficients.push_back(coords1.w);
-                        close2gl_coefficients.push_back(coords2.x);
-                        close2gl_coefficients.push_back(coords2.y);
-                        close2gl_coefficients.push_back(coords2.z);
-                        close2gl_coefficients.push_back(coords2.w);
-                        close2gl_coefficients.push_back(coords3.x);
-                        close2gl_coefficients.push_back(coords3.y);
-                        close2gl_coefficients.push_back(coords3.z);
-                        close2gl_coefficients.push_back(coords3.w);
-                    }
-                } else { // counterclockwise
-                    if (area > 0) {
-                        // cull
-                        clipped_vertices += 3;
-                    } else {
-                        close2gl_coefficients.push_back(coords1.x);
-                        close2gl_coefficients.push_back(coords1.y);
-                        close2gl_coefficients.push_back(coords1.z);
-                        close2gl_coefficients.push_back(coords1.w);
-                        close2gl_coefficients.push_back(coords2.x);
-                        close2gl_coefficients.push_back(coords2.y);
-                        close2gl_coefficients.push_back(coords2.z);
-                        close2gl_coefficients.push_back(coords2.w);
-                        close2gl_coefficients.push_back(coords3.x);
-                        close2gl_coefficients.push_back(coords3.y);
-                        close2gl_coefficients.push_back(coords3.z);
-                        close2gl_coefficients.push_back(coords3.w);
-                    }
-                }
+    close2gl_coefficients.reserve(model_object.triangles.size() * 12); // Reserve space for efficiency
+    for (const Triangle& tri : model_object.triangles) {
+        glm::vec4 coords[3] = {
+            model_view_proj * glm::vec4(tri.vertices[0].pos, 1.0f),
+            model_view_proj * glm::vec4(tri.vertices[1].pos, 1.0f),
+            model_view_proj * glm::vec4(tri.vertices[2].pos, 1.0f)
+        };
+
+        bool should_clip = false;
+        for (int i = 0; i < 3; ++i) {
+            if (coords[i].w <= 0) {
+                should_clip = true;
+                break;
             }
         }
-        int num_vertices = model_object.num_triangles*3;
-        num_vertices -= clipped_vertices;
-        std::vector<GLuint> indices;
-        for (int i = 0; i < num_vertices; i++) {
-            indices.push_back(i);
+        if (should_clip) {
+            clipped_vertices += 3;
+            continue;
         }
-        model_object.setModelCoefficients(close2gl_coefficients);
-        model_object.setIndices(indices);
-        model_object.setupVao();
+        for (int i = 0; i < 3; ++i) {
+            coords[i] /= coords[i].w;
+        }
+        should_clip = false;
+        for (int i = 0; i < 3; ++i) {
+            if (coords[i].z < -1 || coords[i].z > 1) {
+                should_clip = true;
+                break;
+            }
+        }
+        if (should_clip) {
+            clipped_vertices += 3;
+            continue;
+        }
+        float sum = 0.0f;
+        for (int i = 0; i < 3; i++)
+        {
+            float firstTerm = coords[i].x * coords[(i+1) % 3].y;
+            float secondTerm = coords[(i+1) % 3].x * coords[i].y;
+
+            sum += firstTerm - secondTerm;
+        }
+        float area = 0.5f * (sum);
+
+        if ((frontFace == GL_CW && area > 0) || (frontFace != GL_CW && area < 0)) {
+            clipped_vertices += 3;
+            continue;
+        }
+
+        for (int i = 0; i < 3; ++i) {
+            close2gl_coefficients.push_back(coords[i].x);
+            close2gl_coefficients.push_back(coords[i].y);
+            close2gl_coefficients.push_back(coords[i].z);
+            close2gl_coefficients.push_back(coords[i].w);
+        }
     }
+    int num_vertices = model_object.num_triangles*3;
+    num_vertices -= clipped_vertices;
+    std::vector<GLuint> indices;
+    for (int i = 0; i < num_vertices; i++) {
+        indices.push_back(i);
+    }
+    model_object.setNumIndices(indices.size());
+    model_object.setModelCoefficients(close2gl_coefficients);
+    model_object.setIndices(indices);
+    model_object.setupVao();
+    return model_object;
 }

@@ -51,57 +51,11 @@ void OptionsManager::RenderPropertyWindow()
     if (ImGui::CollapsingHeader("Camera"))
     {
         ImGui::Text("Rotation");
-        ImGui::SliderFloat("Pitch", (float *)&properties.rotationPitch, -2.0f * M_PI, 2.0f * M_PI);
+        ImGui::SliderFloat("Pitch", (float *)&properties.rotationPitch, -M_PI/2.001, M_PI/2.001);
         ImGui::SliderFloat("Roll", (float *)&properties.rotationRoll, -2.0f * M_PI, 2.0f * M_PI);
         ImGui::SliderFloat("Yaw", (float *)&properties.rotationYaw, -2.0f * M_PI, 2.0f * M_PI);
 
-        ImGui::Text("Movement");
-        ImGui::Text("  ");
-        ImGui::SameLine();
-        if (ImGui::Button("^"))
-        {
-            properties.shouldMove = true;
-            properties.movementDirection = Forward;
-        }
-        ImGui::SameLine();
-        ImGui::Text("  ");
-        ImGui::SameLine();
-        if (ImGui::Button("Up"))
-        {
-            properties.shouldMove = true;
-            properties.movementDirection = Up;
-        }
-        if (ImGui::Button("<"))
-        {
-            properties.shouldMove = true;
-            properties.movementDirection = Left;
-        }
-        ImGui::SameLine();
-        ImGui::Text("  ");
-        ImGui::SameLine();
-        if (ImGui::Button(">"))
-        {
-            properties.shouldMove = true;
-            properties.movementDirection = Right;
-        }
-
-        ImGui::Text("  ");
-        ImGui::SameLine();
-        if (ImGui::Button("v"))
-        {
-            properties.shouldMove = true;
-            properties.movementDirection = Backwards;
-        }
-        ImGui::SameLine();
-        ImGui::Text("  ");
-        ImGui::SameLine();
-        if (ImGui::Button("Down"))
-        {
-            properties.shouldMove = true;
-            properties.movementDirection = Down;
-        }
-
-        ImGui::SliderFloat("Speed", (float *)&properties.speed, 0.1f, 1000.0f);
+        ImGui::SliderFloat("Speed", (float *)&properties.speed, 0.1f, 100.0f);
         ImGui::Checkbox("Look at Model", &properties.keepLookingAtModel);
 
         ImGui::Text("Reset Position");
@@ -191,37 +145,6 @@ void OptionsManager::RenderPropertyWindow()
         ImGui::ColorEdit3("##Background Color Edit", (float *)&properties.backgroundColor);
         ImGui::Spacing();
     }
-    /*
-    if (managedScene->models[0].textured && ImGui::CollapsingHeader("Texture"))
-    {
-        ImGui::Checkbox("Enable Textures", &properties.textureOn);
-        ImGui::Spacing();
-
-        if (properties.textureOn)
-        {
-            if (ImGui::Button("Select Texture..."))
-                ImGui::OpenPopup("Select Texture");
-            if (fileDialog.showFileDialog("Select Texture", imgui_addons::ImGuiFileBrowser::DialogMode::OPEN, ImVec2(700, 310), ".jpg"))
-                LoadTextureFile(fileDialog.selected_path.c_str());
-            ImGui::Spacing();
-
-            std::string textureName = managedScene->models[0].texture != nullptr ? managedScene->models[0].texture->getName() : "None";
-            ImGui::Text("Current texture:");
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
-            ImGui::Text(textureName.c_str());
-            ImGui::PopStyleColor();
-            ImGui::Spacing();
-
-            ImGui::Text("Resampling mode");
-            ImGui::RadioButton("Nearest Neighbor", &properties.resamplingMode, 0);
-            ImGui::SameLine();
-            ImGui::RadioButton("Bilinear", &properties.resamplingMode, 1);
-            ImGui::SameLine();
-            ImGui::RadioButton("Trilinear", &properties.resamplingMode, 2);
-            ImGui::Spacing();
-        }
-    }
-    */
 
     ImGui::Spacing();
     ImGui::End();
@@ -246,39 +169,34 @@ void OptionsManager::RenderWindow()
 
 void OptionsManager::ApplyPropertiesToScene(float delta_time)
 {
-    
-    if (properties.shouldMove)
-    {
-        camera->move(properties.movementDirection, delta_time);
-
-        if (properties.keepLookingAtModel)
-            if(model_loaded){
-                camera->setLookAtPoint(model_object.getCenterPosition());
-                camera->setViewVector(camera->getLookAtPoint() - camera->getCenterPosition());
-            }
-
-        properties.shouldMove = false;
+    camera->nearplane = -properties.nearPlane;
+    camera->farplane = -properties.farPlane;
+    camera->setHorizontalFOV(properties.horizontalFieldOfView);
+    camera->setVerticalFOV(properties.verticalFieldOfView);
+    camera->speed = properties.speed;
+    if (model_loaded){
+        float r = camera->getLookAtCameraDistance();
+        float y = r*sin(properties.rotationPitch);
+        float z = r*cos(properties.rotationPitch)*cos(properties.rotationYaw);
+        float x = r*cos(properties.rotationPitch)*sin(properties.rotationYaw);
+        if(properties.keepLookingAtModel){
+            camera->setCenterPosition(glm::vec4(x,y,z,1.0f));
+            camera->setLookAtPoint(model_object.getCenterPosition());
+            camera->setViewVector(glm::vec4(0.0f,0.0f,0.0f,1.0f) - glm::vec4(x,y,z,1.0f));
+        }
+        else{
+            camera->setViewVector(glm::vec4(0.0f,0.0f,0.0f,1.0f) - glm::vec4(x,y,z,1.0f));
+        }
     }
-
     if (properties.resetCamera)
     {
-       // managedScene->ResetCamera();
-
+        camera->resetCamera();
         properties.rotationPitch = 0.0f;
         properties.rotationRoll = 0.0f;
         properties.rotationYaw = 0.0f;
 
         properties.resetCamera = false;
     }
-
-    if (!properties.keepLookingAtModel)
-        ;//managedScene->camera.Rotate(properties.rotationPitch, properties.rotationRoll, properties.rotationYaw);
-    else
-        ;//managedScene->camera.LookAtFramedObject();
-    camera->nearplane = -properties.nearPlane;
-    camera->farplane = -properties.farPlane;
-    if(properties.keepLookingAtModel)
-    ;
     if(model_loaded){
         model_object.materials[0].diffuse_color = properties.modelDiffuseColor;
         model_object.materials[0].ambient_color = properties.modelAmbientColor;
@@ -302,14 +220,10 @@ void OptionsManager::ApplyPropertiesToRenderingEngine(glm::mat4 model_matrix,flo
     renderer->setCullingMode(static_cast<CullingModes>(properties.cullingMode));
     renderer->setEngine(static_cast<Engines>(properties.engine));
     renderer->setLightingMode(static_cast<LightingModes>(properties.lightingMode));
-    if(properties.engine == Close2GL){
-        glm::mat4 modelViewProj = camera->getProjectionMatrix() * camera->getViewMatrix() * model_matrix;
-        this->model_object.processTrianglesClosed2GL(modelViewProj,renderer->getFrontFaceOrientation(), g_ScreenWidth, g_ScreenHeight);
-    }
 }
 
 void OptionsManager::LoadInputFile(const char *fileName)
-{   
+{
     this->model_object.loadFromInFileName(fileName);
     properties.modelDiffuseColor = model_object.materials[0].diffuse_color;
     properties.modelAmbientColor =  model_object.materials[0].ambient_color;

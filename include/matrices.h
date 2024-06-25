@@ -102,14 +102,13 @@ glm::vec4 crossproduct(glm::vec4 u, glm::vec4 v);
 // coordenadas ortonormal.
 float dotproduct(glm::vec4 u, glm::vec4 v);
 // Matriz de mudança de coordenadas para o sistema de coordenadas da Câmera.
-glm::mat4 Matrix_Camera_View(glm::vec4 position_c, glm::vec4 view_vector, glm::vec4 up_vector);
+glm::mat4 Matrix_Camera_View(glm::vec4 position_c, glm::vec4 view_vector, glm::vec4 up_vector, glm::vec4 right_vector);
 
 // Matriz de projeção paralela ortográfica
 glm::mat4 Matrix_Orthographic(float l, float r, float b, float t, float n, float f);
 
 // Matriz de projeção perspectiva
-glm::mat4 Matrix_Projection(float vfov, float hfov, float n, float f);
-glm::mat4 Matrix_Perspective(float vfov, float aspect, float n, float f);
+glm::mat4 Matrix_Perspective(float vfov, float hfov, float n, float f);
 
 glm::mat4 Matrix_Viewport(float rv, float lv, float tv, float bv);
 

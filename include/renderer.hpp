@@ -8,7 +8,7 @@
 class Renderer{
     public:
         Renderer();
-        void render(ModelObject object, Camera camera, float screen_width, float screen_height);
+        void render(ModelObject object, Camera camera, float screen_width, float screen_height, glm::mat4 model);
         void setGLFrontFace(int clock_rotation);
         void swapGLFrontFace();
         void setRenderMode(GLint renderMode);
@@ -16,9 +16,9 @@ class Renderer{
         void setEngine(Engines engine);
         void setLightingMode(LightingModes lighting_mode);
         GLint getFrontFaceOrientation();
-        void setupMatrices(ModelObject model_object, Camera camera);
+        void setupMatrices(Camera camera, glm::mat4 model);
         bool isClosed2GLActive();
-        void processTrianglesClosed2GL(ModelObject model_object, glm::mat4 model_view_proj,float screen_width, float screen_height);
+        ModelObject processTrianglesClosed2GL(ModelObject model_object, glm::mat4 model_view_proj,float screen_width, float screen_height);
         GLuint gpuProgramID = 0;
         GLint model_uniform;
         GLint view_uniform;
@@ -35,7 +35,7 @@ class Renderer{
         GLint fragment_shader_type_uniform;
         GLint close2GL_uniform;
     private:
-        glm::mat4 model, view, projection, viewport;
+        glm::mat4 model, view, projection, viewport,model_view_proj;
         bool close2GL_active;
         GLint frontFace;
         GLuint CreateGpuProgram(GLuint vertex_shader_id, GLuint fragment_shader_id);

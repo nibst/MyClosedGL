@@ -1844,6 +1844,8 @@ CMakeFiles/CMP143.dir/src/camera.cpp.o: src/camera.cpp \
   /usr/include/glm/ext/matrix_transform.inl \
   /usr/include/glm/gtc/matrix_transform.inl \
   include/options.hpp \
+  include/GL3/gl3.h \
+  /usr/include/inttypes.h \
   /usr/include/c++/11/iostream \
   /usr/include/c++/11/ostream \
   /usr/include/c++/11/ios \
@@ -2394,6 +2396,7 @@ CMakeFiles/CMP143.dir/src/main.cpp.o: src/main.cpp \
   lib/imgui/imgui_impl_glfw.h \
   lib/imgui/imgui_impl_opengl3.h \
   lib/FileBrowser/ImGuiFileBrowser.h \
+  include/options.hpp \
   /usr/include/c++/11/cfloat
 
 CMakeFiles/CMP143.dir/src/matrices.cpp.o: src/matrices.cpp \

@@ -380,4 +380,5 @@ CMakeFiles/CMP143.dir/src/main.cpp.o: \
  /home/nikolas/Documents/ufrgs/cg/assign2/lib/imgui/imgui_impl_glfw.h \
  /home/nikolas/Documents/ufrgs/cg/assign2/lib/imgui/imgui_impl_opengl3.h \
  /home/nikolas/Documents/ufrgs/cg/assign2/include/../lib/FileBrowser/ImGuiFileBrowser.h \
+ /home/nikolas/Documents/ufrgs/cg/assign2/include/options.hpp \
  /usr/include/c++/11/cfloat

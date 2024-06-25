@@ -2,6 +2,7 @@
 #define PROPERTIES_H
 
 #include <glm/vec3.hpp>
+#include <GL3/gl3.h>
 
 #include <cmath>
 #include <iostream>
@@ -13,11 +14,6 @@ enum RenderModes
     Points = 2
 };
 
-enum PolygonOrientation
-{
-    Clockwise = -1,
-    CounterClockwise = 1
-};
 
 enum CullingModes
 {
@@ -61,7 +57,7 @@ enum Engines
 typedef struct
 {
     int renderMode = Standard;
-    int orientation = Clockwise;
+    int orientation = GL_CW;
     int cullingMode = BackfaceCulling;
     int engine = OpenGL;
     int lightingMode = NoShader;

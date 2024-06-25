@@ -106,6 +106,7 @@ class ModelObject{
         glm::vec4 getCenterPosition();
         void setModelCoefficients(std::vector<float> model_coefficients);
         void setIndices(std::vector<GLuint> indices);
+        void setNumIndices(size_t num_indices);
 
         int num_triangles;
         int num_materials;
