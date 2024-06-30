@@ -62,8 +62,8 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 void CursorPosCallback(GLFWwindow* window, double xpos, double ypos);
 void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
-void positions(ModelObject* model_object, glm::mat4 modelViewProj, Renderer* renderer);
-
+void ShowFramesPerSecond(GLFWwindow* window);
+glm::mat4 getModelMatrixForStartingObjectPlacement(ModelObject object);
 
 // Abaixo definimos variáveis globais utilizadas em várias funções do código.
 
@@ -92,15 +92,8 @@ float g_CameraDistance = 3.5f; // Distância da câmera para a origem
 bool g_ResetCamera = true;
 
 bool tecla_A_pressionada = false, tecla_D_pressionada = false, tecla_S_pressionada = false,
-     tecla_W_pressionada = false, tecla_C_pressionada = false, tecla_ctrl_pressionada = false,
-     tecla_Q_pressionada = false, tecla_Z_pressionada = false, tecla_L_pressionada = false, tecla_R_pressionada = false,
-     tecla_P_pressionada = false, tecla_direita_pressionada = false;
-
-bool g_LookAtCamera = false;
-int g_clock_rotation = GL_CW;
-float g_red = 0.0f;
-float g_green = 0.0f;
-float g_blue = 0.5f;
+     tecla_W_pressionada = false, tecla_C_pressionada = false,
+     tecla_Q_pressionada = false, tecla_Z_pressionada = false;
 
 int main(int argc, char* argv[])
 {
@@ -165,17 +158,6 @@ int main(int argc, char* argv[])
     VAO vao = VAO();
     Renderer *myrenderer = new Renderer();
     glm::vec4 object_position = glm::vec4(0.0f,0.0f,0.0f,1.0f);
-    float r = g_CameraDistance;
-    float y = r*sin(g_CameraPhi);
-    float z = r*cos(g_CameraPhi)*cos(g_CameraTheta);
-    float x = r*cos(g_CameraPhi)*sin(g_CameraTheta);
-    glm::vec4 initial_camera_position = glm::vec4(x,y,z,1.0f);
-    float initial_phi = g_CameraPhi;
-    float initial_theta = g_CameraTheta;
-    float initial_camera_distance = g_CameraDistance;
-    float nearplane = -0.1f;  // Posição do "near plane"
-    float farplane  = -10.0f; // Posição do "far plane"
-
     Camera *camera = new Camera();
     OptionsManager* options_manager = new OptionsManager(window,myrenderer,camera);
 
@@ -188,114 +170,54 @@ int main(int argc, char* argv[])
     {
         //           R     G     B     A
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-
         // "Pintamos" todos os pixels do framebuffer com a cor definida acima,
         // e também resetamos todos os pixels do Z-buffer (depth buffer).
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glUseProgram(myrenderer->gpuProgramID);
 
-
-		glm::vec4 camera_position_c;
         if (camera->isResetedCamera()) {
             g_CameraDistance = camera->getLookAtCameraDistance();
-            g_CameraPhi = camera->phi;
-            g_CameraTheta = camera->theta;
             camera->reseted = false;
         }
-
-
         float current_time = (float)glfwGetTime();
-        float delta_t = current_time - prev_time;
+        double delta_t = current_time - prev_time;
         prev_time = current_time;
-        camera->theta = g_CameraTheta;
-        camera->phi = g_CameraPhi;
         camera->setLookAtCameraDistance(g_CameraDistance);
         if (options_manager->isModelLoaded()){
             if (tecla_D_pressionada){
                 // Movimenta câmera para direita
                 camera->move(Right, delta_t);
-
             }
             if (tecla_S_pressionada){
                 // Movimenta câmera para tras
                 camera->move(Backwards, delta_t);
-
-
             }
             if (tecla_A_pressionada){
                 // Movimenta câmera para esquerda
                 camera->move(Left, delta_t);
-
             }
             if (tecla_W_pressionada){
                 // Movimenta câmera para frente
                 camera->move(Forward, delta_t);
-
             }
             if (tecla_Q_pressionada){
                 // Movimenta câmera para cima
                 camera->move(Up, delta_t);
-
             }
             if (tecla_Z_pressionada){
                 // Movimenta câmera para baixo
                 camera->move(Down, delta_t);
-
             }        
-
-        }
-        if(tecla_R_pressionada){
-            tecla_R_pressionada = false;
         }
         glm::mat4 modelMatrix = glm::mat4(1.0f);
-        // Computamos a matriz "View" utilizando os parâmetros da câmera para
-        // definir o sistema de coordenadas da câmera.  Veja slides 2-14, 184-190 e 236-242 do documento Aula_08_Sistemas_de_Coordenadas.pdf.
-        glm::mat4 view = camera->getViewMatrix();
-
-        // Agora computamos a matriz de Projeção.
-        glm::mat4 projection;
-        projection = camera->getProjectionMatrix();
-
-
-
-        glm::mat4 model = Matrix_Identity(); // Transformação identidade de modelagem
-        
-        // Enviamos as matrizes "view" e "projection" para vertex shader
-        // efetivamente aplicadas em todos os pontos.
-        glUniformMatrix4fv(myrenderer->view_uniform       , 1 , GL_FALSE , glm::value_ptr(view));
-        glUniformMatrix4fv(myrenderer->projection_uniform , 1 , GL_FALSE , glm::value_ptr(projection));
         if(options_manager->isModelLoaded()){
             ModelObject model_object = options_manager->getModelObject();
-            //printf("%f,%f,%f\n",model_object.materials[0].diffuse_color.x, model_object.materials[0].diffuse_color.y, model_object.materials[0].diffuse_color.z);
-            float max_x = model_object.bbox_max.x;
-            float max_y = model_object.bbox_max.y;
-            float max_z = model_object.bbox_max.z;
-            float min_x = model_object.bbox_min.x;
-            float min_y = model_object.bbox_min.y;
-            float min_z = model_object.bbox_min.z;
-            // Center of the object
-            float trans_x = (min_x + max_x) / 2;
-            float trans_y = (min_y + max_y) / 2;
-            float trans_z = (min_z + max_z) / 2;
-            //
-            float size_x  = (max_x - min_x);
-            float size_y  = (max_y - min_y);
-            float size_z  = (max_z - min_z);
-            float scale = std::max(size_x,std::max(size_y,size_z));
-            //center of object is at trans_x, trans_y, trans_z
-            model_object.setCenterPosition(glm::vec4(trans_x,trans_y,trans_z,1));    
-            //so if we translate the opposite coordinates, the center will be at 0,0,0
-            glm::vec3 objectTranslate = glm::vec3(-trans_x, -trans_y, -trans_z);
-            glm::vec3 objectScale = glm::vec3(3.0f / scale, 3.0f / scale, 3.0f / scale);
-            modelMatrix = glm::mat4(1.0f);
-            modelMatrix = glm::scale(modelMatrix, objectScale);
-            modelMatrix = glm::translate(modelMatrix, objectTranslate);
+            modelMatrix = getModelMatrixForStartingObjectPlacement(model_object);
             myrenderer->render(model_object,*camera,g_ScreenWidth,g_ScreenHeight,modelMatrix);
         }
         options_manager->ApplyProperties(delta_t,modelMatrix,g_ScreenWidth, g_ScreenHeight);
-
-
+        ShowFramesPerSecond(window);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -463,15 +385,6 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mod)
     {
         g_AngleZ += (mod & GLFW_MOD_SHIFT) ? -delta : delta;
     }
-
-    // Se o usuário apertar a tecla P, utilizamos projeção perspectiva.
-    if (key == GLFW_KEY_P && action == GLFW_PRESS)
-    {
-        if (action == GLFW_PRESS)
-            tecla_P_pressionada = true;
-
-    }
-
     if (key == GLFW_KEY_W)
     {
         if (action == GLFW_PRESS)
@@ -543,27 +456,60 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mod)
     {
         if (action == GLFW_PRESS)
             tecla_C_pressionada = true;
-    }
-    if (key == GLFW_KEY_L)
-    {   
-        if (action == GLFW_PRESS){
-            tecla_L_pressionada = true;
-            g_LookAtCamera = !g_LookAtCamera;
-        }
-    }      
-    if (key == GLFW_KEY_R)
-    {   
-        if (action == GLFW_PRESS){
-            tecla_R_pressionada = true;
-            g_ResetCamera = true;
-        }
-    }          
+    }    
 }
 
 // Definimos o callback para impressão de erros da GLFW no terminal
 void ErrorCallback(int error, const char* description)
 {
     fprintf(stderr, "ERROR: GLFW: %s\n", description);
+}
+void ShowFramesPerSecond(GLFWwindow* window)
+{
+    // Variáveis estáticas (static) mantém seus valores entre chamadas
+    // subsequentes da função!
+    static float old_seconds = (float)glfwGetTime();
+    static int   ellapsed_frames = 0;
+    static char  buffer[50] = "323741 - Níkolas Padão Schuster - ?? fps";
+
+    ellapsed_frames += 1;
+
+    // Recuperamos o número de segundos que passou desde a execução do programa
+    float seconds = (float)glfwGetTime();
+
+    // Número de segundos desde o último cálculo do fps
+    float ellapsed_seconds = seconds - old_seconds;
+
+    if ( ellapsed_seconds > 1.0f )
+    {
+        snprintf(buffer, 50, "323741 - Níkolas Padão Schuster - %.2f fps", ellapsed_frames / ellapsed_seconds);
+
+        old_seconds = seconds;
+        ellapsed_frames = 0;
+    }
+    glfwSetWindowTitle(window, buffer);
+}
+glm::mat4 getModelMatrixForStartingObjectPlacement(ModelObject object){
+    float max_x = object.bbox_max.x;
+    float max_y = object.bbox_max.y;
+    float max_z = object.bbox_max.z;
+    float min_x = object.bbox_min.x;
+    float min_y = object.bbox_min.y;
+    float min_z = object.bbox_min.z;
+    // Center of the object
+    float trans_x = (min_x + max_x) / 2;
+    float trans_y = (min_y + max_y) / 2;
+    float trans_z = (min_z + max_z) / 2;
+    //
+    float size_x  = (max_x - min_x);
+    float size_y  = (max_y - min_y);
+    float size_z  = (max_z - min_z);
+    float scale = std::max(size_x,std::max(size_y,size_z));
+    //center of object is at trans_x, trans_y, trans_z
+    //so if we translate the opposite coordinates, the center will be at 0,0,0
+    glm::vec3 objectTranslate = glm::vec3(-trans_x, -trans_y, -trans_z);
+    glm::vec3 objectScale = glm::vec3(3.0f / scale, 3.0f / scale, 3.0f / scale);
+    return Matrix_Scale(objectScale.x,objectScale.y,objectScale.z) * Matrix_Translate(objectTranslate.x,objectTranslate.y,objectTranslate.z);
 }
 
 // set makeprg=cd\ ..\ &&\ make\ run\ >/dev/null

@@ -15,6 +15,7 @@ class Renderer{
         void setCullingMode(CullingModes mode);
         void setEngine(Engines engine);
         void setLightingMode(LightingModes lighting_mode);
+        void setBackGroundColor(glm::vec4 color);
         GLint getFrontFaceOrientation();
         void setupMatrices(Camera camera, glm::mat4 model);
         bool isClosed2GLActive();

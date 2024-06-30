@@ -24,18 +24,21 @@ void Camera::setCenterPosition(glm::vec4 position){
 glm::vec4 Camera::getCenterPosition(){
     return this->position_c;
 }
-void Camera::rotate(float dphi,float dtheta){
-    this->phi = dphi;
-    this->theta = dtheta;
-    float y = sin(dphi);
-    float z = cos(dphi)*cos(dtheta); //from polar to cartesian coordinates
-    float x = cos(dphi)*sin(dtheta);
-    this->view_vector = glm::vec4(x,-y,z,0.0f);  // Vetor "view", sentido para onde a câmera está virada
-}
+
 glm::vec4 Camera::getViewVector(){
     return this->view_vector;
 }
-
+void Camera::lookAtObject(glm::vec4 object_center){
+    /*float r = this->look_at_camera_distance;
+    float y = r*sin(properties.rotationPitch);
+    float z = r*cos(properties.rotationPitch)*cos(properties.rotationYaw);
+    float x = r*cos(properties.rotationPitch)*sin(properties.rotationYaw);
+  
+    camera->setCenterPosition(glm::vec4(x,y,z,1.0f));
+    camera->setLookAtPoint(model_object.getCenterPosition());
+    camera->setViewVector(glm::vec4(0.0f,0.0f,0.0f,1.0f) - glm::vec4(x,y,z,1.0f));
+    */
+}
 void Camera::move(MovementOptions direction, float delta_t)
 {    
     glm::vec4 n = -this->view_vector;
@@ -75,9 +78,11 @@ void Camera::move(MovementOptions direction, float delta_t)
 void Camera::resetCamera(){
     this->position_c = DEFAULT_POS;
     this->look_at_camera_distance = DEFAULT_LOOK_AT_CAMERA_DISTANCE;
-    this->phi = DEFAULT_PHI;
-    this->theta = DEFAULT_THETA;
+    this->yaw = 0.0f;
+    this->pitch = 0.0f;
+    this->roll = 0.0f;
     this->reseted = true;
+    this->rotate(0.0f,0.0f,0.0f);
 }
 bool Camera::isResetedCamera(){
     return this->reseted;
@@ -121,9 +126,14 @@ void Camera::rotate(float yaw, float pitch, float roll){
     this->right_vector = DEFAULT_RIGHT_VECTOR;
     this->up_vector = DEFAULT_UP;
     this->view_vector = DEFAULT_VIEW;
-    rotatePitch(pitch);
-    rotateRoll(roll);
-    rotateYaw(yaw);
+
+    glm::vec4 new_view_vector = Matrix_Rotate(yaw,this->up_vector)*Matrix_Rotate(pitch, this->right_vector)*this->view_vector;
+    glm::vec4 new_up_vector = Matrix_Rotate(roll,this->view_vector)*this->up_vector;
+    glm::vec4 new_right_vector = crossproduct(this->view_vector,this->up_vector);
+
+    this->view_vector = new_view_vector;
+    this->up_vector = new_up_vector;
+    this->right_vector = new_right_vector;
 }
 
 void Camera::rotateRoll(float alpha)

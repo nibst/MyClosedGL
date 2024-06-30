@@ -313,10 +313,10 @@ glm::mat4 Matrix_Perspective(float vfov, float hfov, float n, float f)
 void PrintMatrix(glm::mat4 M)
 {
     printf("\n");
-    printf("[ %+0.2f  %+0.2f  %+0.2f  %+0.2f ]\n", M[0][0], M[1][0], M[2][0], M[3][0]);
-    printf("[ %+0.2f  %+0.2f  %+0.2f  %+0.2f ]\n", M[0][1], M[1][1], M[2][1], M[3][1]);
-    printf("[ %+0.2f  %+0.2f  %+0.2f  %+0.2f ]\n", M[0][2], M[1][2], M[2][2], M[3][2]);
-    printf("[ %+0.2f  %+0.2f  %+0.2f  %+0.2f ]\n", M[0][3], M[1][3], M[2][3], M[3][3]);
+    printf("[ %+0.7f  %+0.7f  %+0.7f  %+0.7f ]\n", M[0][0], M[1][0], M[2][0], M[3][0]);
+    printf("[ %+0.7f  %+0.7f  %+0.7f  %+0.7f ]\n", M[0][1], M[1][1], M[2][1], M[3][1]);
+    printf("[ %+0.7f  %+0.7f  %+0.7f  %+0.7f ]\n", M[0][2], M[1][2], M[2][2], M[3][2]);
+    printf("[ %+0.7f  %+0.7f  %+0.7f  %+0.7f ]\n", M[0][3], M[1][3], M[2][3], M[3][3]);
 }
 
 // Função que imprime um vetor v no terminal

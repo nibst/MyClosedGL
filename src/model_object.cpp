@@ -10,7 +10,9 @@ size_t ModelObject::getNumIndices(){return this->num_indices;}
 GLenum ModelObject::getRenderingMode(){return this->rendering_mode;}
 VAO ModelObject::getVAO(){return this->vao;}
 
-ModelObject::ModelObject(){;}
+ModelObject::ModelObject():
+    center_position(glm::vec4(0.0f, 0.0f, 0.0f,1.0f))
+    {;}
 ModelObject::ModelObject(std::string name,size_t first_index,size_t num_indices,
             GLenum rendering_mode,VAO vao,glm::vec3 bbox_min,glm::vec3 bbox_max,GLint id):
             name(name),first_index(first_index),num_indices(num_indices),rendering_mode(rendering_mode),

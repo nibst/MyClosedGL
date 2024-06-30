@@ -10,9 +10,9 @@
 #define DEFAULT_FAR -150.f
 #define DEFAULT_RATIO 1.0f
 
-#define DEFAULT_UP glm::vec4(0.0f,1.0f,0.0f,0.0f)
-#define DEFAULT_VIEW glm::vec4(0.0f,0.0f,DEFAULT_LOOK_AT_CAMERA_DISTANCE,0.0f)
-#define DEFAULT_RIGHT_VECTOR glm::vec4(1.0f,0.0f,0.0f,0.0f)
+#define DEFAULT_RIGHT_VECTOR glm::vec4(1.0f,0.0f,0.0f,0.0f) // u vector
+#define DEFAULT_UP glm::vec4(0.0f,1.0f,0.0f,0.0f) // v vector
+#define DEFAULT_VIEW glm::vec4(0.0f,0.0f,-1.0f,0.0f) // n vector
 
 #define DEFAULT_SPEED 14.5f
 #define DEFAULT_FOV 3.141592/3.0f
@@ -29,7 +29,6 @@ class Camera{
         glm::vec4 getLookAtPoint();
         glm::vec4 getUpVector();
         
-        virtual void rotate(float dphi,float dtheta);
         void move(MovementOptions direction, float delta_time);
         void resetCamera();
 
@@ -46,6 +45,7 @@ class Camera{
         bool isResetedCamera();
         float getLookAtCameraDistance();
         void rotate(float yaw, float pitch, float roll);
+        void lookAtObject(glm::vec4 object_center);
 
         float speed;
         float phi;
@@ -65,9 +65,10 @@ class Camera{
         glm::vec4 view_vector;  // Vetor "view", sentido para onde a câmera está virada (n)
         glm::vec4 up_vector;    // Vetor "up"       (v)
         glm::vec4 right_vector;  // Vetor "right"    (u)
-        glm::vec4 pitch;
-        glm::vec4 yaw;
-        glm::vec4 roll;
+        float pitch;
+        float yaw;
+        float roll;
+
         glm::vec4 look_at_point;
         glm::vec4 position_c ;  // Ponto "c", centro da câmera
         glm::vec4 initial_position;

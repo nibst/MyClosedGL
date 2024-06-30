@@ -73,7 +73,6 @@ typedef struct
     glm::vec3 modelSpecularColor;
     float specularIntensity = 0.2f;
     float modelShineCoefficient;
-    glm::vec3 backgroundColor = glm::vec3(0.0f);
 
     bool resetCamera = false;
     bool keepLookingAtModel = false;

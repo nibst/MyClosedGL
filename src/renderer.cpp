@@ -94,6 +94,10 @@ void Renderer::setupMatrices(Camera camera, glm::mat4 model){
     this->projection = camera.getProjectionMatrix();
     this->model_view_proj = this->projection * this->view * this->model;
 }
+void Renderer::setBackGroundColor(glm::vec4 color){
+    glClearColor(color.x, color.y, color.z, color.w);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
 void Renderer::render(ModelObject object, Camera camera, float screen_width, float screen_height, glm::mat4 model){
     if (close2GL_active){
         setupMatrices(camera, model);
@@ -101,6 +105,8 @@ void Renderer::render(ModelObject object, Camera camera, float screen_width, flo
     }
     glBindVertexArray(object.getVAO().getID());
     glUniformMatrix4fv(model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+    glUniformMatrix4fv(this->view_uniform       , 1 , GL_FALSE , glm::value_ptr(camera.getViewMatrix()));
+    glUniformMatrix4fv(this->projection_uniform , 1 , GL_FALSE , glm::value_ptr(camera.getProjectionMatrix()));
     // Pedimos para a GPU rasterizar os vértices dos eixos XYZ
     // apontados pelo VAO como linhas. Veja a documentação 
     // da função glDrawElements() em http://docs.gl/gl3/glDrawElements.

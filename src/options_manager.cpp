@@ -140,10 +140,6 @@ void OptionsManager::RenderPropertyWindow()
         ImGui::SameLine();
         ImGui::RadioButton("Phong", &properties.lightingMode, 3);
         ImGui::Spacing();
-
-        ImGui::Text("Background color");
-        ImGui::ColorEdit3("##Background Color Edit", (float *)&properties.backgroundColor);
-        ImGui::Spacing();
     }
 
     ImGui::Spacing();
@@ -181,11 +177,12 @@ void OptionsManager::ApplyPropertiesToScene(float delta_time)
         float x = r*cos(properties.rotationPitch)*sin(properties.rotationYaw);
         if(properties.keepLookingAtModel){
             camera->setCenterPosition(glm::vec4(x,y,z,1.0f));
-            camera->setLookAtPoint(model_object.getCenterPosition());
-            camera->setViewVector(glm::vec4(0.0f,0.0f,0.0f,1.0f) - glm::vec4(x,y,z,1.0f));
+            camera->setLookAtPoint(this->model_object.getCenterPosition());
+            camera->setViewVector(camera->getLookAtPoint() - glm::vec4(x,y,z,1.0f));
         }
         else{
-            camera->setViewVector(glm::vec4(0.0f,0.0f,0.0f,1.0f) - glm::vec4(x,y,z,1.0f));
+            camera->rotate(properties.rotationYaw,properties.rotationPitch,properties.rotationRoll); 
+            //camera->setViewVector(glm::vec4(0.0f,0.0f,0.0f,1.0f) - glm::vec4(x,y,z,1.0f));
         }
     }
     if (properties.resetCamera)
@@ -214,7 +211,6 @@ void OptionsManager::ApplyPropertiesToScene(float delta_time)
 
 void OptionsManager::ApplyPropertiesToRenderingEngine(glm::mat4 model_matrix,float g_ScreenWidth, float g_ScreenHeight)
 {   
-
     renderer->setGLFrontFace(properties.orientation);
     renderer->setRenderMode(properties.renderMode);
     renderer->setCullingMode(static_cast<CullingModes>(properties.cullingMode));
