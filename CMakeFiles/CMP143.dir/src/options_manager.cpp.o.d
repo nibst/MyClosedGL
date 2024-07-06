@@ -323,6 +323,7 @@ CMakeFiles/CMP143.dir/src/options_manager.cpp.o: \
  /usr/include/glm/ext/matrix_transform.inl \
  /usr/include/glm/gtc/matrix_transform.inl \
  /home/nikolas/Documents/ufrgs/cg/assign2/include/VAO.hpp \
+ /home/nikolas/Documents/ufrgs/cg/assign2/include/primitives.hpp \
  /home/nikolas/Documents/ufrgs/cg/assign2/include/renderer.hpp \
  /home/nikolas/Documents/ufrgs/cg/assign2/include/camera.hpp \
  /usr/include/glm/gtc/type_ptr.hpp /usr/include/glm/gtc/quaternion.hpp \

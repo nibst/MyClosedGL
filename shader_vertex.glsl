@@ -23,7 +23,7 @@ uniform int vertex_shader_type;
 #define GOURAUD_AD  1
 #define GOURAUD_ADS 2
 
-out vec4 color_vertex;
+out vec4 frag_color;
 out vec4 world_position;
 out vec4 model_position;
 out vec4 frag_normal;
@@ -86,22 +86,22 @@ void main()
     frag_normal.w = 0.0; 
 	if (close2GL_active) {
 		gl_Position = close2GLCoords();
-        color_vertex = noVertexShader();
+        frag_color = noVertexShader();
         //texCoords = texture_coefficients;
 	} else {
 		gl_Position = openGLCoords();
         switch(vertex_shader_type) {
           case NO_SHADER: 
-            color_vertex = noVertexShader();
+            frag_color = noVertexShader();
             break;
           case GOURAUD_AD:
-            color_vertex = gouraudADshader();
+            frag_color = gouraudADshader();
             break;
           case GOURAUD_ADS:
-            color_vertex = gouraudADSshader();
+            frag_color = gouraudADSshader();
             break;
           default:
-            color_vertex = noVertexShader();
+            frag_color = noVertexShader();
             break;
         }
     }  

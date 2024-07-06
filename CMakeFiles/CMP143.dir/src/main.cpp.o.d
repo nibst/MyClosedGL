@@ -371,6 +371,7 @@ CMakeFiles/CMP143.dir/src/main.cpp.o: \
  /home/nikolas/Documents/ufrgs/cg/assign2/include/stb_image.h \
  /home/nikolas/Documents/ufrgs/cg/assign2/include/matrices.h \
  /home/nikolas/Documents/ufrgs/cg/assign2/include/VAO.hpp \
+ /home/nikolas/Documents/ufrgs/cg/assign2/include/primitives.hpp \
  /home/nikolas/Documents/ufrgs/cg/assign2/include/options.hpp \
  /home/nikolas/Documents/ufrgs/cg/assign2/include/camera.hpp \
  /home/nikolas/Documents/ufrgs/cg/assign2/include/options_manager.hpp \

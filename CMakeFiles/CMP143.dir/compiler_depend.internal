@@ -2399,6 +2399,7 @@ CMakeFiles/CMP143.dir/src/main.cpp.o
  /home/nikolas/Documents/ufrgs/cg/assign2/include/stb_image.h
  /home/nikolas/Documents/ufrgs/cg/assign2/include/matrices.h
  /home/nikolas/Documents/ufrgs/cg/assign2/include/VAO.hpp
+ /home/nikolas/Documents/ufrgs/cg/assign2/include/primitives.hpp
  /home/nikolas/Documents/ufrgs/cg/assign2/include/options.hpp
  /home/nikolas/Documents/ufrgs/cg/assign2/include/camera.hpp
  /home/nikolas/Documents/ufrgs/cg/assign2/include/options_manager.hpp
@@ -3011,6 +3012,7 @@ CMakeFiles/CMP143.dir/src/model_object.cpp.o
  /home/nikolas/Documents/ufrgs/cg/assign2/include/VAO.hpp
  /home/nikolas/Documents/ufrgs/cg/assign2/include/GL3/gl3.h
  /usr/include/inttypes.h
+ /home/nikolas/Documents/ufrgs/cg/assign2/include/primitives.hpp
  /usr/include/c++/11/stdexcept
  /usr/include/c++/11/exception
  /usr/include/c++/11/bits/exception_ptr.h
@@ -3428,6 +3430,7 @@ CMakeFiles/CMP143.dir/src/options_manager.cpp.o
  /usr/include/glm/ext/matrix_transform.inl
  /usr/include/glm/gtc/matrix_transform.inl
  /home/nikolas/Documents/ufrgs/cg/assign2/include/VAO.hpp
+ /home/nikolas/Documents/ufrgs/cg/assign2/include/primitives.hpp
  /home/nikolas/Documents/ufrgs/cg/assign2/include/renderer.hpp
  /home/nikolas/Documents/ufrgs/cg/assign2/include/camera.hpp
  /usr/include/glm/gtc/type_ptr.hpp
@@ -3814,6 +3817,7 @@ CMakeFiles/CMP143.dir/src/renderer.cpp.o
  /home/nikolas/Documents/ufrgs/cg/assign2/include/VAO.hpp
  /home/nikolas/Documents/ufrgs/cg/assign2/include/GL3/gl3.h
  /usr/include/inttypes.h
+ /home/nikolas/Documents/ufrgs/cg/assign2/include/primitives.hpp
  /usr/include/c++/11/stdexcept
  /usr/include/c++/11/exception
  /usr/include/c++/11/bits/exception_ptr.h

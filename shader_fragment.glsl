@@ -1,6 +1,6 @@
 #version 450 core
 
-in vec4 color_vertex;
+in vec4 frag_color;
 in vec4 world_position;
 in vec4 model_position;
 in vec4 frag_normal;
@@ -10,7 +10,7 @@ uniform int fragment_shader_type;
 #define NO_SHADER 0
 #define PHONG     3
 
-
+uniform bool close2GL_active;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
@@ -51,25 +51,32 @@ subroutine (fragmentShader) vec4 phongShader() {
     return vec4(diffuseTerm + ambientTerm, 0.0) + specularTerm;
 }
 subroutine (fragmentShader) vec4 noFragmentShader() {
-    return color_vertex;
+    return frag_color;
 }
 
 void main()
-{
-    switch(fragment_shader_type) {
-      case NO_SHADER: {
-        color = color_vertex;//noFragmentShader();
-        break;
-      }
-      case PHONG: {
-        color = phongShader();
-        break;
-      }
-      default: {
-        color = noFragmentShader();
-        break;
+{ 	
+  
+    if (close2GL_active) {
+        color = frag_color;//noFragmentShader();
+	  }
+    else{
+        switch(fragment_shader_type) {
+        case NO_SHADER: {
+          color = frag_color;//noFragmentShader();
+          break;
+        }
+        case PHONG: {
+          color = phongShader();
+          break;
+        }
+        default: {
+          color = noFragmentShader();
+          break;
+        }
       }
     }
+
     //color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
     
 }

@@ -237,7 +237,7 @@ void ModelObject::buildTriangles(){
     std::vector<float>  model_coefficients;
     std::vector<float>  normal_coefficients;
     std::vector<float>  texture_coefficients;
-    size_t first_index = indices.size();
+    size_t first_index = indices.size();//0
     size_t num_triangles = this->num_triangles;
     const float minval = std::numeric_limits<float>::min();
     const float maxval = std::numeric_limits<float>::max();

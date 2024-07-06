@@ -7,6 +7,7 @@
 #include <stb_image.h>
 #include "matrices.h"
 #include "VAO.hpp"
+#include "primitives.hpp"
 #include <stdexcept>
 // Estrutura que representa um modelo geométrico carregado a partir de um
 // arquivo ".obj". Veja https://en.wikipedia.org/wiki/Wavefront_.obj_file .
@@ -66,24 +67,6 @@ struct Object
         printf("OK.\n");
     }
 };
-struct Vertex {
-    glm::vec3 pos;
-    glm::vec3 normal;
-    glm::vec3 color;
-};
-
-struct Triangle {
-    Vertex vertices[3];
-    glm::vec3 face_normal; // Face normal
-};
-
-struct Material {
-    glm::vec3 ambient_color;
-    glm::vec3 diffuse_color;
-    glm::vec3 specular_color;
-    float shine;
-};
-
 class ModelObject{
 
     public:

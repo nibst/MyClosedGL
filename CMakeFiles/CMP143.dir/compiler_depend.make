@@ -2387,6 +2387,7 @@ CMakeFiles/CMP143.dir/src/main.cpp.o: src/main.cpp \
   include/stb_image.h \
   include/matrices.h \
   include/VAO.hpp \
+  include/primitives.hpp \
   include/options.hpp \
   include/camera.hpp \
   include/options_manager.hpp \
@@ -2997,6 +2998,7 @@ CMakeFiles/CMP143.dir/src/model_object.cpp.o: src/model_object.cpp \
   include/VAO.hpp \
   include/GL3/gl3.h \
   /usr/include/inttypes.h \
+  include/primitives.hpp \
   /usr/include/c++/11/stdexcept \
   /usr/include/c++/11/exception \
   /usr/include/c++/11/bits/exception_ptr.h \
@@ -3413,6 +3415,7 @@ CMakeFiles/CMP143.dir/src/options_manager.cpp.o: src/options_manager.cpp \
   /usr/include/glm/ext/matrix_transform.inl \
   /usr/include/glm/gtc/matrix_transform.inl \
   include/VAO.hpp \
+  include/primitives.hpp \
   include/renderer.hpp \
   include/camera.hpp \
   /usr/include/glm/gtc/type_ptr.hpp \
@@ -3798,6 +3801,7 @@ CMakeFiles/CMP143.dir/src/renderer.cpp.o: src/renderer.cpp \
   include/VAO.hpp \
   include/GL3/gl3.h \
   /usr/include/inttypes.h \
+  include/primitives.hpp \
   /usr/include/c++/11/stdexcept \
   /usr/include/c++/11/exception \
   /usr/include/c++/11/bits/exception_ptr.h \
@@ -4553,6 +4557,8 @@ lib/glfw/include/GLFW/glfw3.h:
 /usr/include/x86_64-linux-gnu/bits/math-vector.h:
 
 /usr/include/glm/ext/scalar_uint_sized.hpp:
+
+include/primitives.hpp:
 
 /usr/include/x86_64-linux-gnu/bits/wordsize.h:
 

@@ -2,13 +2,13 @@
 
 Camera::Camera():
     position_c(DEFAULT_POS),view_vector(DEFAULT_VIEW),up_vector(DEFAULT_UP),
-    phi(DEFAULT_PHI),theta(DEFAULT_THETA),nearplane(DEFAULT_NEAR),farplane(DEFAULT_FAR),
+    nearplane(DEFAULT_NEAR),farplane(DEFAULT_FAR),
     horizontal_FOV(DEFAULT_FOV),vertical_FOV(DEFAULT_FOV),speed(DEFAULT_SPEED),look_at_point(DEFAULT_LOOK_AT_POINT),
     look_at_camera_distance(DEFAULT_LOOK_AT_CAMERA_DISTANCE){;}
 
 Camera::Camera(glm::vec4 position_c, glm::vec4 view_vector, glm::vec4 up_vector):
     position_c(position_c),view_vector(view_vector),up_vector(up_vector),
-    phi(DEFAULT_PHI),theta(DEFAULT_THETA),nearplane(DEFAULT_NEAR),farplane(DEFAULT_FAR),
+    nearplane(DEFAULT_NEAR),farplane(DEFAULT_FAR),
     horizontal_FOV(DEFAULT_FOV),vertical_FOV(DEFAULT_FOV),speed(DEFAULT_SPEED),
     look_at_camera_distance(DEFAULT_LOOK_AT_CAMERA_DISTANCE){;}
 
@@ -123,6 +123,7 @@ void Camera::setInitialPosition(glm::vec4 initial_position){
     this->initial_position = initial_position;
 }
 void Camera::rotate(float yaw, float pitch, float roll){
+    this->yaw = yaw; this->pitch = pitch; this->roll = roll;
     this->right_vector = DEFAULT_RIGHT_VECTOR;
     this->up_vector = DEFAULT_UP;
     this->view_vector = DEFAULT_VIEW;

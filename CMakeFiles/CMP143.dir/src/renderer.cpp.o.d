@@ -289,8 +289,10 @@ CMakeFiles/CMP143.dir/src/renderer.cpp.o: \
  /usr/include/glm/gtc/matrix_transform.inl \
  /home/nikolas/Documents/ufrgs/cg/assign2/include/VAO.hpp \
  /home/nikolas/Documents/ufrgs/cg/assign2/include/GL3/gl3.h \
- /usr/include/inttypes.h /usr/include/c++/11/stdexcept \
- /usr/include/c++/11/exception /usr/include/c++/11/bits/exception_ptr.h \
+ /usr/include/inttypes.h \
+ /home/nikolas/Documents/ufrgs/cg/assign2/include/primitives.hpp \
+ /usr/include/c++/11/stdexcept /usr/include/c++/11/exception \
+ /usr/include/c++/11/bits/exception_ptr.h \
  /usr/include/c++/11/bits/cxxabi_init_exception.h \
  /usr/include/c++/11/typeinfo /usr/include/c++/11/bits/nested_exception.h \
  /home/nikolas/Documents/ufrgs/cg/assign2/include/options.hpp \

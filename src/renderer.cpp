@@ -365,6 +365,7 @@ ModelObject Renderer::processTrianglesClosed2GL(ModelObject model_object, glm::m
             clipped_vertices += 3;
             continue;
         }
+        //Divisao por w
         for (int i = 0; i < 3; ++i) {
             coords[i] /= coords[i].w;
         }

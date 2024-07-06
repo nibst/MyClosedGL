@@ -48,8 +48,6 @@ class Camera{
         void lookAtObject(glm::vec4 object_center);
 
         float speed;
-        float phi;
-        float theta;
         float nearplane;  // Posição do "near plane"
         float farplane; // Posição do "far plane"
         bool reseted;
